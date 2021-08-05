@@ -3,27 +3,29 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:shop/providers/product.dart';
 
-class CarItem {
+class CartItem {
   final String title;
   final int quantity;
   final double price;
   final String id;
+  final String productId;
 
-  CarItem(
+  CartItem(
       {required this.title,
       required this.id,
       required this.price,
+      required this.productId,
       required this.quantity});
 }
 
 class Cart with ChangeNotifier {
-  Map<String, CarItem> _items = {};
+  Map<String, CartItem> _items = {};
 
-  Map<String, CarItem> get items {
+  Map<String, CartItem> get items {
     return {..._items};
   }
 
-  int get itemCount {
+  int get itemsCount {
     return _items.length;
   }
 
@@ -40,7 +42,8 @@ class Cart with ChangeNotifier {
   void addItem(Product product) {
     if (_items.containsKey(product.id)) {
       _items.update(product.id, (oldProduct) {
-        return CarItem(
+        return CartItem(
+          productId: product.id,
           title: oldProduct.title,
           id: oldProduct.id,
           price: oldProduct.price,
@@ -49,13 +52,26 @@ class Cart with ChangeNotifier {
       });
     } else {
       _items.putIfAbsent(product.id, () {
-        return CarItem(
+        return CartItem(
+            productId: product.id,
             title: product.title,
             id: Random().nextDouble().toString(),
             price: product.price,
             quantity: 1);
       });
     }
+
+    notifyListeners();
+  }
+
+  void removeItem(String productId) {
+    _items.remove(productId);
+
+    notifyListeners();
+  }
+
+  void clear() {
+    _items = {};
 
     notifyListeners();
   }
