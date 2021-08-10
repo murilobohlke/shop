@@ -4,9 +4,7 @@ import 'package:shop/providers/cart.dart';
 import 'package:shop/providers/product.dart';
 import 'package:shop/utils/app_routes.dart';
 
-class ProductItem extends StatelessWidget {
-  
-
+class ProductGridItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Product product = Provider.of<Product>(context, listen: false);
@@ -17,10 +15,8 @@ class ProductItem extends StatelessWidget {
       child: GridTile(
         child: GestureDetector(
           onTap: () {
-            Navigator.of(context).pushNamed(
-              AppRoutes.PRODUCT_DETAIL,
-              arguments: product
-            );
+            Navigator.of(context)
+                .pushNamed(AppRoutes.PRODUCT_DETAIL, arguments: product);
             // Navigator.of(context).push(
             //   MaterialPageRoute(
             //     builder: (context) => ProductDetailScreen(product),
@@ -36,7 +32,8 @@ class ProductItem extends StatelessWidget {
           backgroundColor: Colors.black87,
           leading: Consumer<Product>(
             builder: (ctx, product, _) => IconButton(
-              icon: Icon(product.isFavorite ? Icons.favorite : Icons.favorite_border),
+              icon: Icon(
+                  product.isFavorite ? Icons.favorite : Icons.favorite_border),
               color: Theme.of(context).accentColor,
               onPressed: () {
                 product.toggleFavorite();
@@ -51,8 +48,20 @@ class ProductItem extends StatelessWidget {
             icon: Icon(Icons.shopping_cart),
             color: Theme.of(context).accentColor,
             onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  duration: Duration(seconds: 5),
+                  action: SnackBarAction(
+                    label: 'DESFAZER',
+                    onPressed: () {
+                      cart.removeSingleItem(product.id);
+                    },
+                  ),
+                  content: Text('Produto adicionado ao carrinho.'),
+                ),
+              );
               cart.addItem(product);
-              
             },
           ),
         ),
