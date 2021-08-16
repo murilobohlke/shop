@@ -48,7 +48,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     setState(() {});
   }
 
-  void _saveForm() {
+  Future<void> _saveForm() async{
     var isValid = _form.currentState!.validate();
 
     if (!isValid) {
@@ -69,17 +69,15 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       title: _formData['title'].toString(),
     );
 
-    if (ModalRoute.of(context)!.settings.arguments != null) {
-      Provider.of<Products>(context, listen: false).updateProduct(newProduct);
-      setState(() {
-        isLoading = false;
-      });
-      Navigator.of(context).pop();
-    } else {
-      Provider.of<Products>(context, listen: false)
-          .addProduct(newProduct)
-          .catchError((error) {
-        return showDialog<Null>(
+      try{
+        if (ModalRoute.of(context)!.settings.arguments != null) {
+          await Provider.of<Products>(context, listen: false).updateProduct(newProduct);
+        } else {
+          await Provider.of<Products>(context, listen: false).addProduct(newProduct);
+        }
+        Navigator.of(context).pop();
+      } catch (error) {
+        await showDialog<Null>(
             context: context,
             builder: (ctx) => AlertDialog(
                   title: Text('Ocorreu um erro!'),
@@ -93,13 +91,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                     )
                   ],
                 ));
-      }).then((value) {
+      } finally {
         setState(() {
           isLoading = false;
         });
-        Navigator.of(context).pop();
-      });
-    }
+      }
   }
 
   @override
