@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
+import 'package:http/http.dart' as http;
 import 'package:shop/data/dummy_data.dart';
 import 'package:shop/providers/product.dart';
 
@@ -15,10 +18,29 @@ class Products with ChangeNotifier {
     return _items.length;
   }
 
-  void addProduct(Product product) {
-    _items.add(product);
+  Future<void> addProduct(Product product) {
+    var url = Uri.parse(
+        'https://murilob-shop-default-rtdb.firebaseio.com/products.json');
 
-    notifyListeners();
+    return http
+        .post(url,
+            body: json.encode({
+              'title': product.title,
+              'description': product.description,
+              'price': product.price,
+              'imageUrl': product.imageUrl,
+              'isFavorite': product.isFavorite,
+            }))
+        .then((value) {
+      _items.add(Product(
+          description: product.description,
+          id: jsonDecode(value.body)['name'],
+          imageUrl: product.imageUrl,
+          price: product.price,
+          title: product.title));
+
+      notifyListeners();
+    });
   }
 
   void updateProduct(Product product) {
