@@ -1,6 +1,7 @@
-import 'dart:math';
+import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:http/http.dart' as http;
 import 'package:shop/providers/cart.dart';
 
 class Order {
@@ -18,6 +19,7 @@ class Order {
 
 class Orders with ChangeNotifier {
   List<Order> _items = [];
+  var _baseUrl ='https://murilob-shop-default-rtdb.firebaseio.com/orders';
 
   List<Order> get items {
     return [..._items];
@@ -27,13 +29,29 @@ class Orders with ChangeNotifier {
     return _items.length;
   }
 
-  void addOrder(Cart cart) {
+  Future<void> addOrder(Cart cart) async {
+    final date = DateTime.now();
+    final response = await http.post(
+      Uri.parse('$_baseUrl.json'),
+      body: json.encode({
+            'total': cart.totalAmount,
+            'date': date.toIso8601String(),
+            'products': cart.items.values.map((cartItem) => {
+              'id': cartItem.id,
+              'price': cartItem.price,
+              'productId': cartItem.productId,
+              'title': cartItem.title,
+              'quantity':cartItem.quantity
+            }).toList(),
+        })
+      
+    );
     _items.insert(
         0,
         Order(
-            id: Random().nextDouble().toString(),
+            id: jsonDecode(response.body)['name'],
             total: cart.totalAmount,
-            date: DateTime.now(),
+            date: date,
             products: cart.items.values.toList()));
 
     notifyListeners();

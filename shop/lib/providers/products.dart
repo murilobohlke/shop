@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
@@ -82,8 +83,22 @@ class Products with ChangeNotifier {
     }
   }
 
-  void deleteProduct(String id) {
-    _items.removeWhere((prod) => prod.id == id);
-    notifyListeners();
+  Future<void> deleteProduct(String id) async{
+    final index = _items.indexWhere((prod) => prod.id == id);
+
+    if(index>=0) {
+      final product = _items[index];
+      _items.remove(product);
+      notifyListeners();
+      
+      final response = await http.delete(Uri.parse('$_baseUrl/${product.id}.json'));
+              
+
+      if(response.statusCode >400) {
+        _items.insert(index, product);
+        notifyListeners();
+        throw HttpException('Ocorreu um erro ao excluir o produto');
+      } 
+    }
   }
 }

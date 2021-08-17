@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
+import 'package:http/http.dart' as http;
 
 class Product with ChangeNotifier {
   final String description;
@@ -16,8 +19,27 @@ class Product with ChangeNotifier {
       required this.price,
       required this.title});
 
-  void toggleFavorite() {
+  Future<void> toggleFavorite() async {
     isFavorite = !isFavorite;
     notifyListeners();
+
+    try{
+      final url ='https://murilob-shop-default-rtdb.firebaseio.com/products/$id.json';
+
+      final response = await http.patch(
+        Uri.parse(url),
+        body: json.encode({
+          'isFavorite': isFavorite,
+        })
+      );
+
+      if(response.statusCode>=400){
+        isFavorite = !isFavorite;
+        notifyListeners();
+      }
+    } catch(error) {
+      isFavorite = !isFavorite;
+      notifyListeners();
+    }
   }
 }
